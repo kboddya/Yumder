@@ -1,6 +1,7 @@
 import {View, Text, TextInput, StyleSheet} from "react-native";
 import {useEffect, useState} from "react";
-import AuthService from "@/app/pages/services/AuthService";
+import AuthService from "@/app/services/AuthService";
+import { router } from "expo-router";
 
 export default function Auth() {
     const [email, setEmail] = useState("");
@@ -59,6 +60,7 @@ export default function Auth() {
                             setEmailErrorMessage(res.email);
                             setPasswordErrorMessage(res.password);
                         })
+                        router.replace("/pages/(tabs)/home");
                     }}>
                         Sign In
                     </Text>
