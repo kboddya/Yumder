@@ -2,6 +2,7 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    "jsx": "react-native", // This is the most important line for your error
     "paths": {
       "@/*": [
         "./*"
