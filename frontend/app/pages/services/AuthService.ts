@@ -8,28 +8,59 @@ export default class AuthService {
         this.password = password;
     }
 
-
-    async signIn(): Promise<{
-        success: boolean;
-        message: string;
-    }> {
-        const respons = {
+    private checkMailAndPassword(): {
+        success: boolean,
+        email: string,
+        password: string
+    } {
+        const response = {
             success: true,
-            message: ""
+            email: "",
+            password: ""
+
+        };
+        if (this.email.length === 0) {
+            response.success = false;
+            response.email = "Email is required";
         }
+
+        if (this.password.length === 0) {
+            response.success = false;
+            response.password = "Password is required";
+        }
+
+        if (!response.success) return response;
+
         if (!this.email.includes("@")) {
-            respons.success = false;
-            respons.message = "Invalid email format";
+            response.success = false;
+            response.email += "Invalid email format";
         }
-        if (this.password.length < 6) {
-            respons.success = false;
-            respons.message = "Password must be at least 6 characters long";
+        if (this.password.length < 8) {
+            response.success = false;
+            response.password += "Password must be longer";
         }
+
+        return response;
+    }
+    async signIn(): Promise<{
+        success: boolean,
+        email: string,
+        password: string
+
+    }> {
+        const responseMailChaker = this.checkMailAndPassword();
+        if (!responseMailChaker.success) return responseMailChaker;
+
+        const response = {
+            success: true,
+            email: "",
+            password: ""
+        };
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 1000));
         // Here you would normally call your backend API to authenticate the user
         // For this example, we'll just simulate a successful login
-        return respons;
+        return response;
     }
 
 }

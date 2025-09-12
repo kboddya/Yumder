@@ -1,9 +1,21 @@
 import {View, Text, TextInput, StyleSheet} from "react-native";
-import {useState} from "react";
+import {useEffect, useState} from "react";
+import AuthService from "@/app/pages/services/AuthService";
 
 export default function Auth() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const authService = new AuthService(email, password);
+    const [emailErrorMessage, setEmailErrorMessage] = useState("");
+    const [passwordErrorMessage, setPasswordErrorMessage] = useState("");
+    useEffect(() => {
+        if (emailErrorMessage !== "") {
+            setEmail("");
+        }
+        if (passwordErrorMessage !== "") {
+            setPassword("");
+        }
+    }, [emailErrorMessage, passwordErrorMessage]);
     return (
         <View style={{
             flex: 1,
@@ -23,38 +35,31 @@ export default function Auth() {
                 <TextInput
                     onChangeText={setEmail}
                     keyboardType="email-address"
+                    value={email}
                     textContentType={"emailAddress"}
-                    placeholder="Enter your email"
-                    style={{
-                        height: 50,
-                        borderColor: 'gray',
-                        borderWidth: 1,
-                        borderRadius: 5,
-                        paddingHorizontal: 10,
-                        marginBottom: 15,
-                        fontSize: 17,
-                    }}
-                    placeholderTextColor={"#868686"}
+                    placeholder={emailErrorMessage === "" ? "Enter your email" : emailErrorMessage}
+                    style={[emailErrorMessage === "" ? {borderColor: "gray"} : {borderColor: "red"}, styles.input]}
+                    placeholderTextColor={emailErrorMessage === "" ? "#868686" : "red"}
                 />
 
                 <TextInput
-                    placeholder="Enter your password"
+                    placeholder={passwordErrorMessage === "" ? "Enter your password" : passwordErrorMessage}
                     onChangeText={setPassword}
+                    value={password}
                     textContentType={"password"}
                     secureTextEntry={true}
-                    style={{
-                        height: 50,
-                        borderColor: 'gray',
-                        borderWidth: 1,
-                        borderRadius: 5,
-                        paddingHorizontal: 10,
-                        marginBottom: 15,
-                        fontSize: 17,
-                    }}
-                    placeholderTextColor={"#868686"}
+                    style={[passwordErrorMessage === "" ? {borderColor: "gray"} : {borderColor: "red"}, styles.input]}
+                    placeholderTextColor={passwordErrorMessage === "" ? "#868686" : "red"}
                 />
-                <View style={{width: "80%", flexDirection: "row", justifyContent: "space-between", alignSelf: "center"}}>
-                    <Text style={styles.button}>
+                <View
+                    style={{width: "80%", flexDirection: "row", justifyContent: "space-between", alignSelf: "center"}}>
+                    <Text style={styles.button} onPress={() => {
+                        authService.signIn().then(res => {
+                            console.log(res);
+                            setEmailErrorMessage(res.email);
+                            setPasswordErrorMessage(res.password);
+                        })
+                    }}>
                         Sign In
                     </Text>
                     <Text style={styles.button}>
@@ -79,5 +84,14 @@ const styles = StyleSheet.create({
         fontSize: 18,
         color: 'white',
         textAlign: "center",
+    },
+
+    input: {
+        height: 50,
+        borderWidth: 1,
+        borderRadius: 5,
+        paddingHorizontal: 10,
+        marginBottom: 15,
+        fontSize: 17,
     }
 });
