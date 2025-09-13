@@ -14,13 +14,16 @@
 // }
 
 import { Stack } from 'expo-router';
+import { IngredientsProvider } from './context/IngredientsContext';
 
 export default function Layout() {
     return (
-        <Stack>
-            <Stack.Screen name="pages/(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="pages/welcome" options={{ headerShown: false }} />
-        </Stack>
+        <IngredientsProvider>
+            <Stack>
+                <Stack.Screen name="pages/(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="pages/welcome" options={{ headerShown: false }} />
+            </Stack>
+        </IngredientsProvider>
     );
 }
 

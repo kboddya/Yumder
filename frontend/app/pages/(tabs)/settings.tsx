@@ -39,13 +39,11 @@ export default function SettingsScreen() {
                         {/* --- ACCOUNT CARD --- */}
                         <View style={styles.card}>
                             <Text style={styles.sectionHeader}>Account</Text>
-                            <SettingsRow icon="user-o" label="Username" onPress={() => router.push({ pathname: '/pages/settings/update-settings', params: { field: 'Username' } })} />
+                            <SettingsRow icon="envelope-o" label="Email" onPress={() => router.push({ pathname: '/pages/settings/update-settings', params: { field: 'Email' } })} />
                             <View style={styles.separator} />
                             <SettingsRow icon="lock" label="Password" onPress={() => router.push({ pathname: '/pages/settings/update-settings', params: { field: 'Password' } })} />
                             <View style={styles.separator} />
-                            <SettingsRow icon="envelope-o" label="Email" onPress={() => router.push({ pathname: '/pages/settings/update-settings', params: { field: 'Email' } })} />
-                            <View style={styles.separator} />
-                            <SettingsRow icon="trophy" label="Premium" onPress={() => router.push({ pathname: '/pages/settings/update-settings', params: { field: 'Subscription' } })} />
+                            <SettingsRow icon="trophy" label="Premium Status" onPress={() => router.push({ pathname: '/pages/settings/update-settings', params: { field: 'Subscription' } })} />
                         </View>
                         {/* --- GENERAL CARD --- */}
                         <View style={styles.card}>
