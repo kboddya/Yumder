@@ -7,8 +7,22 @@ from flask_cors import CORS
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)  
 client = genai.Client(api_key="AIzaSyCfZM4xjA67sLx9hrt1T31CydDpwIu3Ddc")
+client_list = []
+
+def initialize_client(email, password, status="free"):
+    for client in client_list:
+        if client['name'] == email and client['password'] == password:
+            client['status'] = status  # Update status if user exists
+            return
+    client_list.append({"name": email, "password": password, "status": status})
+
+def get_client(email, password):
+    for client in client_list:
+        if client['name'] == email and client['password'] == password:
+            return client  # Now includes 'status'
+    return None
 
 def detect_plan(status):
     match status:
@@ -139,8 +153,16 @@ def upload_json():
 def sign_in():
     try:
         data = request.get_json()
-        logging.info(f"Sign-in data received: {data}")
-        return jsonify({"status": "success", "message": "Sign-in processed"})
+        email = data.get('email')
+        password = data.get('password')
+        
+        client = get_client(email, password)
+        if client:
+            plan_status = client['status']
+            prompt = detect_plan(plan_status)
+            return jsonify({"status": "success", "message": "Sign-in processed"})
+        else:
+            return jsonify({"status": "error", "message": "Invalid credentials"}), 401
     except Exception as e:
         logging.error(f"Error in sign_in: {e}")
         return jsonify({"error": str(e)}), 500
@@ -148,6 +170,7 @@ def sign_in():
 @app.route('/health', methods=['GET'])
 def health_check():
     return jsonify({"status": "healthy"})
+
 
 if __name__ == "__main__":
     logging.info("Starting Flask server on 0.0.0.0:5000")
