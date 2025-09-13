@@ -6,8 +6,8 @@ import {View, Text, StyleSheet} from 'react-native';
 export default function HomeScreen() {
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Home Screen</Text>
-            <Text>This is the main screen of the app.</Text>
+            <Text style={styles.title}>Ingredients Tab</Text>
+            <Text>This is the niggers tab.</Text>
         </View>
     );
 }

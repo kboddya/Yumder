@@ -2,129 +2,207 @@
 
 // 1. --- IMPORTS ---
 import React from 'react';
-import {View, Text, StyleSheet, Alert, SafeAreaView} from 'react-native';
-// We need 'router' to handle the navigation when the user logs out.
-import {router, Stack} from 'expo-router';
+import { View, Text, StyleSheet, Alert, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
+import { router } from 'expo-router';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
-// 2. --- THE COMPONENT ---
+
+// A reusable component for our list items to keep the code clean
+const SettingsRow = ({ icon, label, onPress }: { icon: any; label: string; onPress: () => void }) => (
+    <TouchableOpacity style={styles.row} onPress={onPress}>
+        <View style={styles.rowLeftContainer}>
+            <View style={styles.iconContainer}>
+                <FontAwesome name={icon} size={20} color="#007AFF" />
+            </View>
+            <Text style={styles.rowLabel}>{label}</Text>
+        </View>
+        <FontAwesome name="chevron-right" size={16} color="#888" />
+    </TouchableOpacity>
+);
+
+
+// 2. --- THE MAIN COMPONENT ---
 export default function SettingsScreen() {
 
-    // A placeholder for the user's data.
-    const user = {
-        email: "hackathon.user@email.com",
+    // --- ACTION HANDLERS ---
+    const handleNavigation = (screen: string) => {
+        Alert.alert("Navigate", `This will take you to the ${screen} screen.`);
     };
 
-    // --- ACTIONS ---
-
     const handleLogout = () => {
-        Alert.alert(
-            "Log Out",
-            "Are you sure you want to log out?",
-            [
-                {text: "Cancel", style: "cancel"},
-                {
-                    text: "Log Out",
-                    onPress: () => {
-                        console.log("User logged out! Navigating to Auth screen...");
-                        // We use 'replace' to prevent the user from going "back" to the logged-in area.
-                        router.replace('/pages/welcome');
-                    },
-                    style: "destructive"
-                }
-            ]
-        );
+        Alert.alert("Log Out", "Are you sure you want to log out?", [
+            { text: "Cancel", style: "cancel" },
+            { text: "Log Out", onPress: () => router.replace('/pages/welcome'), style: "destructive" }
+        ]);
     };
 
     const handleDeleteAccount = () => {
-        Alert.alert(
-            "Delete Account",
-            "This action is permanent and cannot be undone. Are you sure?",
-            [
-                {text: "Cancel", style: "cancel"},
-                {
-                    text: "Delete",
-                    onPress: () => {
-                        console.log("User account deleted!"),
-                            router.replace('/pages/welcome');
-                    },
-                    style: "destructive"
-                }
-            ]
-        );
+        Alert.alert("Delete Account", "This action is permanent and cannot be undone.", [
+            { text: "Cancel", style: "cancel" },
+            { text: "Delete", onPress: () => router.replace('/pages/welcome'), style: "destructive" }
+        ]);
     };
 
     // 3. --- THE UI (What the User Sees) ---
     return (
+        // SafeAreaView ensures content doesn't go under the phone's notch or status bar.
         <SafeAreaView style={styles.safeArea}>
-            <View style={styles.container}>
 
-                {/* --- Title Section --- */}
-                <Text style={styles.title}>Settings</Text>
-                {/* --- Account Info Section --- */}
-                <View style={styles.infoSection}>
-                    <Text style={styles.infoLabel}>Logged in as</Text>
-                    <Text style={styles.infoEmail}>{user.email}</Text>
-                </View>
-
-                {/* --- Actions Section --- */}
-                {/* We use a View to group our action texts together */}
-                <View style={styles.actionsSection}>
-                    <Text style={styles.actionText} onPress={handleLogout}>
-                        Log Out
-                    </Text>
-
-                    <Text style={styles.dangerActionText} onPress={handleDeleteAccount}>
-                        Delete Account
-                    </Text>
-                </View>
-
+            {/* HEADER SECTION */}
+            <View style={styles.header}>
+                <Text style={styles.headerTitle}>Settings</Text>
+                <Text style={styles.headerSubtitle}>Account Information</Text>
             </View>
+
+            {/* Use ScrollView in case the content becomes longer than the screen */}
+            <ScrollView contentContainerStyle={styles.scrollContainer}>
+
+                {/* ACCOUNT CARD */}
+                <View style={styles.card}>
+                    <Text style={styles.sectionHeader}>Account</Text>
+                    <SettingsRow
+                        icon="user-o"
+                        label="Username"
+                        onPress={() => router.push({ pathname: '/pages/settings/update-settings', params: { field: 'Username' } })}
+                    />
+                    <View style={styles.separator} />
+                    <SettingsRow
+                    icon="lock"
+                    label="Password"
+                    onPress={() => router.push({ pathname: '/pages/settings/update-settings', params: { field: 'Password' } })}
+                    />
+                    <View style={styles.separator} />
+                    <SettingsRow
+                    icon="envelope-o"
+                    label="Email"
+                    onPress={() => router.push({ pathname: '/pages/settings/update-settings', params: { field: 'Email' } })}
+                    />
+                    <View style={styles.separator} />
+                    <SettingsRow
+                    icon="trophy"
+                    label="Premium"
+                    onPress={() => router.push({ pathname: '/pages/settings/update-settings', params: { field: 'Subscription' } })}
+                    />
+                </View>
+
+                {/* GENERAL CARD */}
+                <View style={styles.card}>
+                    <Text style={styles.sectionHeader}>General</Text>
+                    <SettingsRow
+                    icon="bell-o"
+                    label="Notifications"
+                    onPress={() => router.push({ pathname: '/pages/settings/notifications-settings', params: { field: 'Notifications' } })}
+                    />
+                    <View style={styles.separator} />
+                    <SettingsRow
+                    icon="question-circle-o"
+                    label="Help & Support"
+                    onPress={() => router.push('/pages/settings/help-support')}
+                    />
+                </View>
+
+                {/* DANGER ZONE CARD */}
+                <View style={styles.card}>
+                    <TouchableOpacity style={styles.dangerButton} onPress={handleLogout}>
+                        <FontAwesome name="sign-out" size={22} color="#c53030" />
+                        <Text style={styles.dangerButtonText}>Log Out</Text>
+                    </TouchableOpacity>
+                    <View style={styles.separator} />
+                    <TouchableOpacity style={styles.dangerButton} onPress={handleDeleteAccount}>
+                        <FontAwesome name="trash-o" size={22} color="#c53030" />
+                        <Text style={styles.dangerButtonText}>Delete Account</Text>
+                    </TouchableOpacity>
+                </View>
+
+            </ScrollView>
         </SafeAreaView>
     );
 }
 
-// 4. --- THE STYLES ---
+// 4. --- THE STYLES (This is where the magic happens!) ---
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#f0f4f7', // Light grey background for the whole screen
     },
-    container: {
-        flex: 1,
+    header: {
+        backgroundColor: '#007AFF', // The vibrant blue from the design
         paddingHorizontal: 20,
-        paddingTop: 20,
+        paddingVertical: 30,
+        paddingTop: 50,
     },
-    title: {
-        fontSize: 32,
+    headerTitle: {
+        fontSize: 34,
         fontWeight: 'bold',
-        marginBottom: 40, // More space after the title
+        color: '#fff',
     },
-    infoSection: {
-        marginBottom: 40,
-    },
-    infoLabel: {
+    headerSubtitle: {
         fontSize: 16,
-        color: '#666',
+        color: '#fff',
+        marginTop: 4,
     },
-    infoEmail: {
-        fontSize: 20,
-        marginTop: 5,
+    scrollContainer: {
+        padding: 20,
     },
-    actionsSection: {
-        marginTop: 'auto', // This is a clever trick to push this section to the bottom
-        paddingBottom: 30,
+    card: {
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        marginBottom: 20,
+        // Shadow for iOS
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        // Shadow for Android
+        elevation: 3,
     },
-    actionText: {
+    sectionHeader: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#999',
+        paddingHorizontal: 20,
+        paddingTop: 15,
+        paddingBottom: 10,
+    },
+    row: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 15,
+        paddingHorizontal: 20,
+    },
+    rowLeftContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    iconContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: 20, // Makes it a perfect circle
+        backgroundColor: '#eef5ff', // Light blue background for the icon
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 15,
+    },
+    rowLabel: {
         fontSize: 18,
-        color: '#007AFF', // A standard blue color for links/actions
-        paddingVertical: 15, // Makes the tappable area larger
-        textAlign: 'center',
+        fontWeight: '500',
     },
-    dangerActionText: {
-        fontSize: 16,
+    separator: {
+        height: 1,
+        backgroundColor: '#f0f0f0', // Very light grey line
+        marginLeft: 75, // Indent the separator to align with text
+    },
+    dangerButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 15,
+        paddingHorizontal: 20,
+    },
+    dangerButtonText: {
         color: '#c53030', // A "danger" red color
-        paddingVertical: 15, // Makes the tappable area larger
-        textAlign: 'center',
-        marginTop: 10,
+        fontSize: 18,
+        fontWeight: '500',
+        marginLeft: 15,
     },
 });

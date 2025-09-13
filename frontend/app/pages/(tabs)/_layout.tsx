@@ -16,6 +16,15 @@ export default function TabLayout() {
                     tabBarIcon: ({ color }) => <FontAwesome size={28} name="home" color={color} />,
                 }}
             />
+            
+            <Tabs.Screen
+                name="ingredients" // This links directly to your `ingredients.tsx` file
+                options={{
+                    title: 'Ingredients',
+                    headerShown: false,
+                    tabBarIcon: ({ color }) => <FontAwesome size={28} name="cog" color={color} />,
+                }}
+            />
 
             {/* This is the SECOND tab because it's written second. */}
             <Tabs.Screen
