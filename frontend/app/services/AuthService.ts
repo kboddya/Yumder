@@ -76,7 +76,6 @@ export default class AuthService {
             email: "",
             password: ""
         };
-
         return response;
     }
 

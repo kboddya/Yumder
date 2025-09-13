@@ -1,41 +1,25 @@
-// This is the corrected _layout.tsx file
+// app/pages/(tabs)/_layout.tsx
 
 import { Tabs } from 'expo-router';
-import FontAwesome from '@expo/vector-icons/FontAwesome'; // Let's add icons back for a nicer look
+// The import path is updated to point to the new components folder
+import CustomTabBar from '../../components/CustomTabBar';
 
 export default function TabLayout() {
-    return (
-        <Tabs screenOptions={{ tabBarActiveTintColor: 'blue' }}>
-
-            {/* This is now the FIRST tab because it's written first. */}
-            <Tabs.Screen
-                name="home" // This links directly to your `home.tsx` file
-                options={{
-                    title: 'Home',
-                    headerShown: false,
-                    tabBarIcon: ({ color }) => <FontAwesome size={28} name="home" color={color} />,
-                }}
-            />
-            
-            <Tabs.Screen
-                name="ingredients" // This links directly to your `ingredients.tsx` file
-                options={{
-                    title: 'Ingredients',
-                    headerShown: false,
-                    tabBarIcon: ({ color }) => <FontAwesome size={28} name="cog" color={color} />,
-                }}
-            />
-
-            {/* This is the SECOND tab because it's written second. */}
-            <Tabs.Screen
-                name="settings" // This links directly to your `settings.tsx` file
-                options={{
-                    title: 'Settings',
-                    headerShown: false,
-                    tabBarIcon: ({ color }) => <FontAwesome size={28} name="cog" color={color} />,
-                }}
-            />
-
-        </Tabs>
-    );
+  return (
+    <Tabs
+        // Tell the navigator to use our custom component
+        tabBar={props => <CustomTabBar {...props} />}
+        screenOptions={{
+            headerShown: false, // We will build custom headers in each screen
+        }}
+    >
+      {/* 
+        The order you write them here is the order they will appear.
+        1st: home, 2nd: ingredients, 3rd: settings
+      */}
+      <Tabs.Screen name="home" />
+      <Tabs.Screen name="ingredients" />
+      <Tabs.Screen name="settings" />
+    </Tabs>
+  );
 }
