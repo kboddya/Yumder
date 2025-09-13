@@ -57,7 +57,8 @@ export default class AuthService {
             password: ""
         };
         // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        const apiResponse = await fetch("192.168.207.230:")
         // Here you would normally call your backend API to authenticate the user
         // For this example, we'll just simulate a successful login
         return response;
