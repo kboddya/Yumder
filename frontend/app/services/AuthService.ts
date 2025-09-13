@@ -1,3 +1,5 @@
+import {SignUp, SignIn} from "@/app/services/ApiService"
+
 export default class AuthService {
 
     private email: string;
@@ -42,7 +44,8 @@ export default class AuthService {
 
         return response;
     }
-    async signIn(): Promise<{
+
+    async SignIn(): Promise<{
         success: boolean,
         email: string,
         password: string
@@ -56,10 +59,24 @@ export default class AuthService {
             email: "",
             password: ""
         };
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        // Here you would normally call your backend API to authenticate the user
-        // For this example, we'll just simulate a successful login
+
+        return response;
+    }
+
+    async SignUp() :Promise<{
+        success: boolean,
+        email: string,
+        password: string
+    }> {
+        const responseMailChaker = this.checkMailAndPassword();
+        if (!responseMailChaker.success) return responseMailChaker;
+
+        const response = {
+            success: true,
+            email: "",
+            password: ""
+        };
+
         return response;
     }
 

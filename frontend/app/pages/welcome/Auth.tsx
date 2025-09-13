@@ -1,7 +1,7 @@
 import {View, Text, TextInput, StyleSheet} from "react-native";
 import {useEffect, useState} from "react";
 import AuthService from "@/app/services/AuthService";
-import { router } from "expo-router";
+import {router} from "expo-router";
 
 export default function Auth() {
     const [email, setEmail] = useState("");
@@ -57,14 +57,25 @@ export default function Auth() {
                     <Text style={styles.button} onPress={() => {
                         authService.signIn().then(res => {
                             console.log(res);
+                            if (res.success) {
+                                router.replace("/pages/(tabs)/home");
+                            }
                             setEmailErrorMessage(res.email);
                             setPasswordErrorMessage(res.password);
                         })
-                        router.replace("/pages/(tabs)/home");
                     }}>
                         Sign In
                     </Text>
-                    <Text style={styles.button}>
+                    <Text style={styles.button} onPress={() => {
+                        authService.signUp().then(res => {
+                            console.log(res);
+                            if (res.success) {
+                                router.replace("/pages/(tabs)/home");
+                            }
+                            setEmailErrorMessage(res.email);
+                            setPasswordErrorMessage(res.password);
+                        })
+                    }}>
                         Sign Up
                     </Text>
                 </View>
