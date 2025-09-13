@@ -29,7 +29,7 @@ export default function SettingsScreen() {
     const handleDeleteAccount = () => { Alert.alert("Delete Account", "This action is permanent and cannot be undone.", [{ text: "Cancel", style: "cancel" }, { text: "Delete", onPress: () => router.replace('/pages/welcome'), style: "destructive" }]); };
 
     return (
-        <ImageBackground source={{ uri: 'https://www.transparenttextures.com/patterns/pinstripe.png' }} style={styles.bgImage}>
+        <ImageBackground style={styles.bgImage}>
             <SafeAreaView style={styles.safeArea}>
                 <ScrollView>
                     <View style={styles.header}>
