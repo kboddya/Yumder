@@ -1,3 +1,4 @@
+    # ...existing code...
 from google import genai
 from google.genai import types
 from flask import Flask, request, jsonify
@@ -11,25 +12,19 @@ CORS(app)
 client = genai.Client(api_key="AIzaSyCfZM4xjA67sLx9hrt1T31CydDpwIu3Ddc")
 client_list = []
 
-def initialize_client(email, password, status="free"):
+def create_client(email, password):
     for client in client_list:
         if client['name'] == email and client['password'] == password:
-            client['status'] = status  # Update status if user exists
             return
-    client_list.append({"name": email, "password": password, "status": status})
+    client_list.append({"name": email, "password": password})
 
 def get_client(email, password):
     for client in client_list:
         if client['name'] == email and client['password'] == password:
-            return client  # Now includes 'status'
+            return client 
     return None
 
-def detect_plan(status):
-    match status:
-        case "free":
-            return "Create exactly 1 recipe from these ingredients in valid JSON format with these exact fields: name, ingredients, instructions, time_consumed, energy_value_score. Make sure the response is valid JSON that can be parsed."
-        case "pro":
-            return "Create exactly 2 different recipes from these ingredients in valid JSON format with these exact fields: name, ingredients, instructions, time_consumed, energy_value_score, url_to_picture. Make sure the response is valid JSON that can be parsed."
+
 
 def generate_ingredients(image_bytes):
     try:
@@ -57,14 +52,14 @@ def generate_ingredients(image_bytes):
         logging.error(f"Error generating ingredients: {e}")
         return None
 
-def generate_recipes(ingredients, plan):
     try:
-        prompt = detect_plan(plan)
+        prompt = "Create a recipe from these ingredients in valid JSON format with these exact fields: name, ingredients, instructions, time_consumed, energy_value_score. Make sure the response is valid JSON that can be parsed."
+        ingredients = str(ingredients).strip().replace('\n', ', ').replace(';', ', ')
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=[
                 types.Part.from_text(f"Ingredients: {ingredients}"),
-                prompt
+                types.Part.from_text(prompt)
             ], 
             config=types.GenerateContentConfig(
                 responseMimeType="application/json",
@@ -88,16 +83,13 @@ def upload_image():
         if not result:
             return jsonify({"error": "Failed to process image"}), 500
             
-        # Extract text from response
         if hasattr(result, 'text'):
             try:
                 ingredients_data = json.loads(result.text)
                 return jsonify(ingredients_data)
             except json.JSONDecodeError:
-                # If not valid JSON, try to extract ingredients from text
                 ingredients_text = result.text
                 if "ingredients" in ingredients_text.lower():
-                    # Try to find ingredients in the text
                     return jsonify({"ingredients": ingredients_text})
                 else:
                     return jsonify({"ingredients": ingredients_text})
@@ -110,66 +102,85 @@ def upload_image():
 
 @app.route('/upload_json', methods=['POST'])
 def upload_json():
-    try:
-        data = request.get_json()
-        logging.info(f"Received JSON data: {data}")
-        
-        if not data or 'ingredients' not in data:
-            return jsonify({"error": "No ingredients provided"}), 400
-            
-        ingredients = data.get('ingredients', '')
-        plan = data.get('plan', 'free')
-        
-        result = generate_recipes(ingredients, plan)
-        
-        if not result:
-            return jsonify({"error": "Failed to generate recipes"}), 500
-            
-        # Extract text from response
-        if hasattr(result, 'text'):
-            try:
-                recipes_data = json.loads(result.text)
-                return jsonify(recipes_data)
-            except json.JSONDecodeError as e:
-                logging.error(f"Failed to parse JSON: {e}")
-                logging.error(f"Raw response: {result.text}")
-                
-                # Try to fix common JSON issues
-                try:
-                    # Sometimes Gemini adds markdown code blocks
-                    cleaned_text = result.text.replace('```json', '').replace('```', '').strip()
-                    recipes_data = json.loads(cleaned_text)
-                    return jsonify(recipes_data)
-                except:
-                    return jsonify({"error": "AI returned invalid JSON", "raw_response": result.text}), 500
-        else:
-            return jsonify({"error": "Unexpected response format from AI"}), 500
-            
-    except Exception as e:
-        logging.error(f"Error in upload_json: {e}")
-        return jsonify({"error": str(e)}), 500
+    logging.info("Step 1: Getting JSON from request")
+    data = request.get_json()
+    logging.info(f"Step 2: Received JSON data: {data}")
 
-@app.route('/sign_in', methods=['POST'])
-def sign_in():
+    if not data or 'ingredients' not in data:
+        logging.info("Step 3: No ingredients provided in data")
+        return jsonify({"error": "No ingredients provided"}), 400
+
+    ingredients = data.get('ingredients', '')
+    logging.info(f"Step 4: Ingredients: {ingredients}")
+
+    logging.info("Step 5: Calling generate_recipes")
+    result = generate_recipes(ingredients)
+    logging.info(f"Step 6: Result from generate_recipes: {result}")
+
+    if not result:
+        logging.info("Step 7: Failed to generate recipes")
+        return jsonify({"error": "Failed to generate recipes"}), 500
+
+    if hasattr(result, 'text'):
+        logging.info(f"Step 8: Result has text attribute: {getattr(result, 'text', None)}")
+        try:
+            recipes_data = json.loads(result.text)
+            logging.info(f"Step 9: Successfully parsed JSON: {recipes_data}")
+            return jsonify(recipes_data)
+        except json.JSONDecodeError as e:
+            logging.error(f"Step 10: Failed to parse JSON: {e}")
+            logging.error(f"Step 11: Raw response: {result.text}")
+
+            try:
+                cleaned_text = result.text.replace('```json', '').replace('```', '').strip()
+                recipes_data = json.loads(cleaned_text)
+                logging.info(f"Step 12: Successfully parsed cleaned JSON: {recipes_data}")
+                return jsonify(recipes_data)
+            except Exception as e2:
+                logging.error(f"Step 13: Failed to parse cleaned JSON: {e2}")
+                return jsonify({"error": "AI returned invalid JSON", "raw_response": result.text}), 500
+    else:
+        logging.info("Step 14: Unexpected response format from AI (no text attribute)")
+        return jsonify({"error": "Unexpected response format from AI"}), 500
+
+@app.route('/sign_up', methods=['POST'])
+def sign_up():
     try:
         data = request.get_json()
         email = data.get('email')
         password = data.get('password')
-        
-        client = get_client(email, password)
-        if client:
-            plan_status = client['status']
-            prompt = detect_plan(plan_status)
-            return jsonify({"status": "success", "message": "Sign-in processed"})
+
+        if not email or not password:
+            return jsonify({"error": "Email and password are required"}), 400
+
+        # Simulate user creation
+        new_user = create_client(email, password)
+        if new_user:
+            return jsonify({"status": "success", "message": "User created successfully"}), 201
         else:
-            return jsonify({"status": "error", "message": "Invalid credentials"}), 401
+            return jsonify({"status": "error", "message": "User creation failed"}), 500
     except Exception as e:
-        logging.error(f"Error in sign_in: {e}")
+        logging.error(f"Error in sign_up: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/health', methods=['GET'])
-def health_check():
-    return jsonify({"status": "healthy"})
+@app.route('/login', methods=['POST'])
+def login():
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        password = data.get('password')
+
+        if not email or not password:
+            return jsonify({"error": "Email and password are required"}), 400
+
+        user = get_client(email, password)
+        if user:
+            return jsonify({"status": "success", "message": "Login successful", "user": user}), 200
+        else:
+            return jsonify({"status": "error", "message": "Invalid email or password"}), 401
+    except Exception as e:
+        logging.error(f"Error in login: {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
