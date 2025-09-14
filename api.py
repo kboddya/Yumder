@@ -1,4 +1,3 @@
-    # ...existing code...
 from google import genai
 from google.genai import types
 from flask import Flask, request, jsonify
@@ -52,19 +51,45 @@ def generate_ingredients(image_bytes):
         logging.error(f"Error generating ingredients: {e}")
         return None
 
+def generate_recipes(ingredients):
+    """
+    Create a recipe JSON from provided ingredients (list or string).
+    Returns the raw model response (with .text) or None on error.
+    """
     try:
-        prompt = "Create a recipe from these ingredients in valid JSON format with these exact fields: name, ingredients, instructions, time_consumed, energy_value_score. Make sure the response is valid JSON that can be parsed."
-        ingredients = str(ingredients).strip().replace('\n', ', ').replace(';', ', ')
+        # Normalize ingredients to a readable comma-separated string
+        if isinstance(ingredients, (list, tuple)):
+            ingredients_str = ", ".join(map(str, ingredients))
+        else:
+            ingredients_str = str(ingredients).strip().replace('\n', ', ').replace(';', ', ')
+
+        prompt = (
+            "Create a single recipe from these ingredients in valid JSON with EXACT fields: "
+            "name, ingredients, instructions, time_consumed, energy_value_score. "
+            "Return ONLY JSON, no code fences."
+        )
+
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=[
-                types.Part.from_text(f"Ingredients: {ingredients}"),
-                types.Part.from_text(prompt)
-            ], 
+                types.Part.from_text(text=f"Ingredients: {ingredients_str}"),
+                types.Part.from_text(text=prompt),
+            ],
             config=types.GenerateContentConfig(
                 responseMimeType="application/json",
-                temperature=0.7
-            )
+                responseSchema={
+                    "type": "object",
+                    "properties": {
+                        "name": {"type": "string"},
+                        "ingredients": {"type": "string"},
+                        "instructions": {"type": "string"},
+                        "time_consumed": {"type": "string"},
+                        "energy_value_score": {"type": "number"},
+                    },
+                    "required": ["name", "ingredients", "instructions", "time_consumed", "energy_value_score"],
+                },
+                temperature=0.7,
+            ),
         )
         return response
     except Exception as e:
@@ -184,5 +209,5 @@ def login():
 
 
 if __name__ == "__main__":
-    logging.info("Starting Flask server on 0.0.0.0:5000")
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    logging.info("Starting Flask server on 0.0.0.0:5001")
+    app.run(host='0.0.0.0', port=5001, debug=True)
