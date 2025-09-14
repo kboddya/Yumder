@@ -48,7 +48,7 @@ export default function RecipeViewAllScreen() {
                     setModalVisible(true)
                 }}
             >
-                <Image source={item.url_to_picture || ""} style={styles.itemImage}/>
+                <Image source={{uri: item.url_to_picture}} style={styles.itemImage}/>
                 <Text style={styles.itemText}>{item.name}</Text>
             </TouchableOpacity>
             {/* The remove button only appears when isEditing is true */}
@@ -66,7 +66,7 @@ export default function RecipeViewAllScreen() {
                 <Stack.Screen options={{headerShown: false}}/>
                 <ScrollView style={stylesModal.container}>
                     {/* MODIFIED: The source now uses the local image object from the recipe details */}
-                    <ImageBackground source={item?.url_to_picture} style={stylesModal.headerImage}>
+                    <ImageBackground source={{uri: item?.url_to_picture}} style={stylesModal.headerImage}>
                         <View style={stylesModal.headerOverlay}>
                             <Text style={stylesModal.headerTitle}>{item?.name}</Text>
                         </View>

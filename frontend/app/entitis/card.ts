@@ -5,5 +5,5 @@ export type card = {
     instructions?: string,
     time_consumed?: string,
     energy_value_score?: number,
-    url_to_picture?: string,
+    url_to_picture: string,
 }

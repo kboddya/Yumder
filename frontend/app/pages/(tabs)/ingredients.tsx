@@ -24,7 +24,7 @@ export default function IngredientsScreen() {
         <TouchableOpacity
             style={styles.itemRow}
         >
-            <Image source={item.url_to_picture || ""} style={styles.itemImage}/>
+            <Image source={{uri: item.url_to_picture}} style={styles.itemImage}/>
             <Text style={styles.itemText}>{item.name}</Text>
         </TouchableOpacity>
     );

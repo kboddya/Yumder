@@ -5,6 +5,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import {GenerReceps} from "@/app/services/FoodService";
 // 1. Import our custom hook
 import { useIngredients } from '../../context/IngredientsContext';
+import { uploadImageToApi } from '@/app/services/ApiService';
 
 export default function IngredientsViewAllScreen() {
     // 2. Get the shared data and functions from the context
@@ -13,6 +14,14 @@ export default function IngredientsViewAllScreen() {
     // This local state is still needed for the UI logic of this screen
     const [isEditing, setIsEditing] = useState(false);
     const [newIngredient, setNewIngredient] = useState('');
+
+    const [loading, setLoading] = useState(false);
+
+    const handleUpload = async () => {
+        setLoading(true);
+        await uploadImageToApi();
+        setLoading(false);
+    }
 
     const handleAddIngredient = () => {
         // 3. Call the shared 'addIngredient' function from the context
@@ -46,9 +55,10 @@ export default function IngredientsViewAllScreen() {
                     headerTintColor: '#854d0e',
                     headerRight: () => (
                         <View style={styles.headerButtons}>
-                            <TouchableOpacity onPress={() => router.push('/pages/camera')} style={styles.headerButton}>
+                            {loading ? (<Text>Up...</Text>):<TouchableOpacity onPress={() => handleUpload()} style={styles.headerButton}>
                                 <FontAwesome name="camera" size={22} color="#854d0e" />
-                            </TouchableOpacity>
+                            </TouchableOpacity>}
+                            
                             <TouchableOpacity onPress={() => setIsEditing(!isEditing)} style={styles.headerButton}>
                                 <Text style={styles.headerButtonText}>{isEditing ? 'Done' : 'Edit'}</Text>
                             </TouchableOpacity>

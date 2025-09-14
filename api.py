@@ -3,6 +3,7 @@ from google.genai import types
 from flask import Flask, request, jsonify
 import logging, json
 from flask_cors import CORS
+from serpapi import GoogleSearch
 
 logging.basicConfig(level=logging.INFO)
 
@@ -41,7 +42,8 @@ def generate_ingredients(image_bytes):
                 responseSchema={
                     "type": "object",
                     "properties": {
-                        "ingredients": {"type": "string"}
+                        "ingredients": {"type": "array",
+                                        "items": {"type": "string"}}
                     }
                 }
             )
@@ -94,6 +96,19 @@ def generate_recipes(ingredients):
         return response
     except Exception as e:
         logging.error(f"Error generating recipes: {e}")
+        return None
+
+def get_images_by_item(recipe_name):
+    params = {
+        "engine": "google_images",
+        "q": recipe_name,
+        "api_key": "6c8bea872a8a276846de76be01a5c6679498dff1afdbd4330d07a4517488eccc"
+    }
+    search = GoogleSearch(params)
+    results = search.get_dict()
+    try:
+        return results["images_results"][0]["original"]
+    except (KeyError, IndexError):
         return None
 
 @app.route('/upload', methods=['POST'])
@@ -150,6 +165,8 @@ def upload_json():
         logging.info(f"Step 8: Result has text attribute: {getattr(result, 'text', None)}")
         try:
             recipes_data = json.loads(result.text)
+            recipe_name = recipes_data.get("name", "")
+            recipes_data["url_to_picture"] = get_images_by_item(recipe_name)
             logging.info(f"Step 9: Successfully parsed JSON: {recipes_data}")
             return jsonify(recipes_data)
         except json.JSONDecodeError as e:

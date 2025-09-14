@@ -73,7 +73,6 @@ export default function HomeScreen() {
                 <View>
                     <Text style={[styles.title, {color: "white"}]}>{cardElement.name}</Text>
                     <Text style={{color: "white", fontSize: 18}}>Cooking time: {cardElement.time_consumed}</Text>
-                    <Text style={{color: "white", fontSize: 18}}>Score: {cardElement.energy_value_score} {cardElement.energy_value_score?.toString().includes("kcal")? "" : "kcal"}</Text>
                 </View>
             </View>
         )
@@ -119,7 +118,7 @@ export default function HomeScreen() {
                     cardStyle={styles.cardStyle}
                     overlayLabelContainerStyle={styles.overlayLabelContainer}
                     disableTopSwipe
-                    prerenderItems={5}
+                    prerenderItems={10}
                     disableBottomSwipe
                     onSwipeRight={async (card) => onSwipeRight(card)}
                     onSwipeLeft={async (card) => onSwipeLeft(card)}
