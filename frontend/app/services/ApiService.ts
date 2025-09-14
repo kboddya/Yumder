@@ -94,16 +94,11 @@ export const GetRecepts = async (ingredients: string[]) => {
             ingredients: ingredients
         })
     });
-    console.log(apiResponse)
+
     if (apiResponse.ok) {
         const data = await apiResponse.json();
-        if (data.success) {
-            console.warn(data)
-            return data.recepts;
-        } else {
-            console.error(apiResponse.status.toString());
-            return {globalErrorMessage: data.globalErrorMessage};
-        }
+        console.log(data)
+        return data;
     } else {
         console.error(apiResponse.status.toString());
         return {globalErrorMessage: apiResponse.status.toString()};

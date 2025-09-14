@@ -30,6 +30,7 @@ export const RemoveUserToken = async (): Promise<void> => {
 export const SetCards = async (cards: card[]): Promise<void> => {
     try {
         const jsonValue = JSON.stringify(cards);
+        console.log("Data to save in stor", jsonValue)
         await AsyncStorage.setItem('cards', jsonValue);
     } catch (error) {
         console.error('Error setting cards:', error);
@@ -39,6 +40,7 @@ export const SetCards = async (cards: card[]): Promise<void> => {
 export const GetCards = async (): Promise<card[]|null> => {
     try {
         const jsonValue = await AsyncStorage.getItem('cards');
+        console.log("data from stor:", jsonValue)
         return jsonValue != null ? JSON.parse(jsonValue) : null;
     } catch (error) {
         console.error('Error getting cards:', error);

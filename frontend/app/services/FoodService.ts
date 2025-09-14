@@ -1,17 +1,23 @@
 import {GetRecepts} from "@/app/services/ApiService";
-import {GetIngredients, SetIngredients, SetCards} from "@/app/services/StorageService";
+import {GetIngredients, GetCards, SetCards} from "@/app/services/StorageService";
 
 export const GenerReceps = async () => {
     const ingredients = await GetIngredients();
     if (!ingredients) return {globalErrorMessage: "No ingredients found."};
 
     const response = await GetRecepts(ingredients);
-    if ('globalErrorMessage' in response) {
-        return {success: false, globalErrorMessage: response.globalErrorMessage};
+    console.log(response.name)
+    if (response?.name !== ""){
+        console.log("dsfs")
+        const currentCards = await GetCards() || [];
+        SetCards([response]);
+        return {
+            success: true
+        }
     } else {
-        await SetCards(response);
-        console.log(response);
-        return {success: true};
+        return {
+            success: false
+        }
     }
     // await
     //     SetCards([{

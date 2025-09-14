@@ -4,7 +4,7 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {View, Text, StyleSheet, Image} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Swiper, type SwiperCardRefType} from 'rn-swiper-list';
-import {GetCards, UpdateFavoriteRecepts, GetIngredients, SetCards} from "@/app/services/StorageService";
+import {GetCards, UpdateFavoriteRecepts, GetIngredients, SetCards, GetFavorite} from "@/app/services/StorageService";
 import {GenerReceps} from "@/app/services/FoodService";
 import {card} from '@/app/entitis/card';
 
@@ -14,8 +14,19 @@ export default function HomeScreen() {
     const [currentIngredients, setCurrentIngredients] = useState<string[]>([]);
     const [remainingCards, setRemainingCards] = useState<number>(-1);
     const [changedIngredients, setChangedIngredients] = useState<boolean>(false);
+    const [appStart, setAppStart] = useState<boolean>(true);
+    const [inWork, setInWork] = useState<boolean>(false);
     useEffect(() => {
-        if (remainingCards <= -1 || changedIngredients) {
+        if (appStart) {
+            GetFavorite().then(res => {
+                if (res) setCardList(res.slice(0, 3));
+            });
+            setRemainingCards(cardList.length);
+            setAppStart(false);
+        }
+
+        if ((remainingCards <= 3 || changedIngredients) && !inWork) {
+            setInWork(true);
             if (changedIngredients) setChangedIngredients(false);
             console.log("Fetching new recipes due to ingredient change or initial load.");
             GenerReceps().then(res => {
@@ -24,6 +35,7 @@ export default function HomeScreen() {
                         if (cards) {
                             setCardList([...cardList, ...cards]);
                             setRemainingCards(remainingCards + cards.length);
+                            setInWork(false);
                         }
                     });
                 }
@@ -61,7 +73,7 @@ export default function HomeScreen() {
                 <View>
                     <Text style={[styles.title, {color: "white"}]}>{cardElement.name}</Text>
                     <Text style={{color: "white", fontSize: 18}}>Cooking time: {cardElement.time_consumed}</Text>
-                    <Text style={{color: "white", fontSize: 18}}>Score: {cardElement.energy_value_score}</Text>
+                    <Text style={{color: "white", fontSize: 18}}>Score: {cardElement.energy_value_score} {cardElement.energy_value_score?.toString().includes("kcal")? "" : "kcal"}</Text>
                 </View>
             </View>
         )
@@ -107,6 +119,7 @@ export default function HomeScreen() {
                     cardStyle={styles.cardStyle}
                     overlayLabelContainerStyle={styles.overlayLabelContainer}
                     disableTopSwipe
+                    prerenderItems={5}
                     disableBottomSwipe
                     onSwipeRight={async (card) => onSwipeRight(card)}
                     onSwipeLeft={async (card) => onSwipeLeft(card)}
