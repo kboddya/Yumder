@@ -60,6 +60,13 @@ export default class AuthService {
             password: ""
         };
 
+        SignIn(this.email, this.password).then(result => {
+            response.success = result.success;
+            this.email = result.emailErrorMessage || "";
+            this.password = result.passwordErrorMessage || "";
+        })
+
+
         return response;
     }
 
@@ -76,6 +83,13 @@ export default class AuthService {
             email: "",
             password: ""
         };
+
+        SignUp(this.email, this.password).then(result => {
+            response.success = result.success;
+            this.email = result.emailErrorMessage || "";
+            this.password = result.passwordErrorMessage || "";
+        })
+
         return response;
     }
 

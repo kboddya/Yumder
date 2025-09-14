@@ -1,28 +1,28 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import {GetIngredients, SetIngredients} from "@/app/services/StorageService";
 
-// This is the initial data, our single source of truth now.
-const initialFridgeIngredients: string[] = [
-    'Salad', 'Tomato', 'Cheese', 'Salmon', 'Chicken Breast', 'Broccoli'
-];
 
-// Define the shape of the data and functions our context will provide.
 interface IngredientsContextType {
     ingredients: string[];
     addIngredient: (name: string) => boolean; // Returns true on success, false on duplicate
     removeIngredient: (indexToRemove: number) => void;
 }
 
-// Create the context.
 const IngredientsContext = createContext<IngredientsContextType | undefined>(undefined);
 
-// Create the Provider component. This component will wrap our app.
 export const IngredientsProvider = ({ children }: { children: ReactNode }) => {
-    const [ingredients, setIngredients] = useState<string[]>(initialFridgeIngredients);
+    const [ingredients, setIngredients] = useState<string[]>([]);
+
+    useEffect(() => {
+        GetIngredients().then(res => {
+            if (res) setIngredients(res);
+        })
+    }, [ingredients]);
 
     const removeIngredient = (indexToRemove: number) => {
-        setIngredients(currentIngredients =>
-            currentIngredients.filter((_, index) => index !== indexToRemove)
-        );
+        const filtered = ingredients.filter((_, index) => index !== indexToRemove);
+        SetIngredients(filtered);
+        setIngredients(filtered);
     };
 
     const addIngredient = (name: string): boolean => {
@@ -35,6 +35,7 @@ export const IngredientsProvider = ({ children }: { children: ReactNode }) => {
             return false; // Indicate failure (duplicate or empty)
         }
 
+        SetIngredients([trimmedName, ...ingredients]);
         setIngredients(currentIngredients => [trimmedName, ...currentIngredients]);
         return true; // Indicate success
     };

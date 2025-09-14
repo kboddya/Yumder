@@ -1,44 +1,67 @@
 // app/(tabs)/home.tsx
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {View, Text, StyleSheet, Image} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Swiper, type SwiperCardRefType} from 'rn-swiper-list';
+import {GetCards, UpdateFavoriteRecepts, GetIngredients, SetCards} from "@/app/services/StorageService";
+import {GenerReceps} from "@/app/services/FoodService";
 import {card} from '@/app/entitis/card';
 
 
-const cardList: card[] = [
-    {
-        name: 'Spaghetti Carbonara',
-        image: 'https://www.allrecipes.com/thmb/Vg2cRidr2zcYhWGvPD8M18xM_WY=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/11973-spaghetti-carbonara-ii-DDMFS-4x3-6edea51e421e4457ac0c3269f3be5157.jpg',
-        cookingTime: '20 mins'
-    },
-    {
-        name: 'Chicken Alfredo',
-        image: 'https://midwestfoodieblog.com/wp-content/uploads/2023/07/chicken-alfredo-1-2.jpg',
-        cookingTime: '30 mins'
-    },
-    {
-        name: 'Beef Stroganoff',
-        image: 'https://www.allrecipes.com/thmb/mSWde3PHTu-fDkbvWBw0D1JlS8U=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/25202beef-stroganoff-iii-ddmfs-3x4-233-0f26fa477e9c446b970a32502468efc6.jpg',
-        cookingTime: '40 mins'
-    },
-]
-
 export default function HomeScreen() {
+    const [cardList, setCardList] = useState<card[]>([]);
+    const [currentIngredients, setCurrentIngredients] = useState<string[]>([]);
+    const [remainingCards, setRemainingCards] = useState<number>(-1);
+    const [changedIngredients, setChangedIngredients] = useState<boolean>(false);
+    useEffect(() => {
+        if (remainingCards <= -1 || changedIngredients) {
+            if (changedIngredients) setChangedIngredients(false);
+            console.log("Fetching new recipes due to ingredient change or initial load.");
+            GenerReceps().then(res => {
+                if (res.success) {
+                    GetCards().then(cards => {
+                        if (cards) {
+                            setCardList([...cardList, ...cards]);
+                            setRemainingCards(remainingCards + cards.length);
+                        }
+                    });
+                }
+            })
+
+        }
+    });
+
+    GetIngredients().then(res => {
+        if (res && JSON.stringify(res) !== JSON.stringify(currentIngredients)) {
+            setCurrentIngredients(res);
+            setChangedIngredients(true);
+        }
+    });
+
+    const onSwipeRight = (cardIndex: number) => {
+        UpdateFavoriteRecepts(cardList[cardIndex]);
+        setRemainingCards(remainingCards - 1);
+    }
+
+    const onSwipeLeft = (cardIndex: number) => {
+        setRemainingCards(remainingCards - 1);
+        SetCards(cardList.filter((_, index) => index !== cardIndex));
+    }
+
     const ref = React.useRef<SwiperCardRefType>(null);
     const renderCard = useCallback((cardElement: card) => {
-        console.log(cardElement);
         return (
-            <View style={[styles.renderCardContainer, {backgroundColor: 'lightgray'}]}>
+            <View style={[styles.renderCardContainer, {backgroundColor: '#d97706'}]}>
                 <Image
-                    source={{uri: cardElement.image}}
+                    source={{uri: cardElement.url_to_picture}}
                     style={styles.cardImage}
                     resizeMode="cover"
                 />
                 <View>
-                    <Text style={styles.title}>{cardElement.name}</Text>
-                    <Text>Cooking time: {cardElement.cookingTime}</Text>
+                    <Text style={[styles.title, {color: "white"}]}>{cardElement.name}</Text>
+                    <Text style={{color: "white", fontSize: 18}}>Cooking time: {cardElement.time_consumed}</Text>
+                    <Text style={{color: "white", fontSize: 18}}>Score: {cardElement.energy_value_score}</Text>
                 </View>
             </View>
         )
@@ -76,6 +99,7 @@ export default function HomeScreen() {
             }}>
                 <Swiper
                     data={cardList}
+                    key={cardList.map(card => card.name).join('-')}
                     ref={ref}
                     renderCard={renderCard}
                     OverlayLabelLeft={OverlayLabelLeft}
@@ -84,9 +108,11 @@ export default function HomeScreen() {
                     overlayLabelContainerStyle={styles.overlayLabelContainer}
                     disableTopSwipe
                     disableBottomSwipe
-                    onSwipeRight={(card) => console.log('Swiped Right:', cardList[card].name)}
-                    onSwipeLeft={(card) => console.log('Swiped Left:', cardList[card].name)}
-
+                    onSwipeRight={async (card) => onSwipeRight(card)}
+                    onSwipeLeft={async (card) => onSwipeLeft(card)}
+                    onSwipedAll={() => {
+                        setRemainingCards(-1);
+                    }}
                 />
             </View>
         </GestureHandlerRootView>
@@ -110,15 +136,10 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         flex: 1,
         borderRadius: 15,
-        height: '61%',
+        height: '60%',
         marginHorizontal: 20,
-        marginTop: "16%",
+        marginTop: "16.7%",
         width: '90%',
-        // shadowColor: '#000',
-        // shadowOffset: {width: 0, height: 2},
-        // shadowOpacity: 0.3,
-        // shadowRadius: 5,
-        // elevation: 5,
     },
     renderCardContainer: {
         alignItems: 'center',
@@ -126,11 +147,6 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         height: '60%',
         width: '90%',
-        // shadowColor: '#000',
-        // shadowOffset: {width: 0, height: 2},
-        // shadowOpacity: 0.3,
-        // shadowRadius: 5,
-        // elevation: 5,
     },
     cardImage: {
         width: "90%",

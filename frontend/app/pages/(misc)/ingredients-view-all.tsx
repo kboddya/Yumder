@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { Stack, router } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import {GenerReceps} from "@/app/services/FoodService";
 // 1. Import our custom hook
 import { useIngredients } from '../../context/IngredientsContext';
 
@@ -50,6 +51,13 @@ export default function IngredientsViewAllScreen() {
                             </TouchableOpacity>
                             <TouchableOpacity onPress={() => setIsEditing(!isEditing)} style={styles.headerButton}>
                                 <Text style={styles.headerButtonText}>{isEditing ? 'Done' : 'Edit'}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => {
+                                GenerReceps().then(res => {
+                                    if (res.success) router.replace('/pages/(tabs)/home');
+                                })
+                            }} style={styles.headerButton}>
+                                <Text style={styles.headerButtonText}>Load</Text>
                             </TouchableOpacity>
                         </View>
                     ),

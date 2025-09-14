@@ -55,7 +55,7 @@ export default function Auth() {
                 <View
                     style={{width: "80%", flexDirection: "row", justifyContent: "space-between", alignSelf: "center"}}>
                     <Text style={styles.button} onPress={() => {
-                        authService.signIn().then(res => {
+                        authService.SignIn().then(res => {
                             console.log(res);
                             if (res.success) {
                                 router.replace("/pages/(tabs)/home");
@@ -67,7 +67,7 @@ export default function Auth() {
                         Sign In
                     </Text>
                     <Text style={styles.button} onPress={() => {
-                        authService.signUp().then(res => {
+                        authService.SignUp().then(res => {
                             console.log(res);
                             if (res.success) {
                                 router.replace("/pages/(tabs)/home");
